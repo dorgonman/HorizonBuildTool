@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "HorizonBuildTool", "HorizonBuildTool\HorizonBuildTool.pyproj", "{EE8CE4AA-4F90-4B8C-9F3E-701D5FB8DFCD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE8CE4AA-4F90-4B8C-9F3E-701D5FB8DFCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE8CE4AA-4F90-4B8C-9F3E-701D5FB8DFCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
