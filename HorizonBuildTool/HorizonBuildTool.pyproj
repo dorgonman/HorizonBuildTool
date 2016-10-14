@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>ee8ce4aa-4f90-4b8c-9f3e-701d5fb8dfcd</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Source\HorizonCMakeBuild\Main.py</StartupFile>
+    <StartupFile>Source\HorizonUE4Build\Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -14,7 +14,8 @@
     <RootNamespace>HorizonBuildTool</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>--config="Config/sqlite3_vs2015_win64.xml"</CommandLineArguments>
+    <CommandLineArguments>
+    </CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -27,6 +28,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="HorizonBuildTool.py" />
+    <Compile Include="Source\HorizonUE4Build\HorizonUE4Build.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Source\HorizonUE4Build\Main.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Source\HorizonUE4Build\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Source\HorizonBuildFileUtil\HorizonBuildFileUtil.py" />
     <Compile Include="Source\HorizonBuildFileUtil\__init__.py" />
     <Compile Include="Source\HorizonCMakeBuild\HorizonCMakeBuild.py" />
@@ -36,6 +46,7 @@
     <Compile Include="Source\HorizonCMakeBuild\__init__.py" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Source\HorizonUE4Build\" />
     <Folder Include="Source\" />
     <Folder Include="Source\HorizonBuildFileUtil\" />
     <Folder Include="Source\HorizonCMakeBuild\" />
