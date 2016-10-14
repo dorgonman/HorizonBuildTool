@@ -86,8 +86,6 @@ class HorizonUE4Build(object):
         #xmldoc = minidom.parse(self.m_sConfig)   
         #self.m_sHorizonEngineRoot = os.path.abspath(xmldoc.getElementsByTagName('UnrealEngineRoot')[0].firstChild.nodeValue);
 
-
-
     def execute(self): 
         HorizonBuildFileUtil.HorizonBuildFileUtil.EnsureDir(self.m_sOutReportFilePath)
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
@@ -100,5 +98,33 @@ class HorizonUE4Build(object):
             except:
                 pass 
         else:
-            print("start build project")
+            self.buildClient()
+
+
+    def buildClient(self):
+        bSuccess = False
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT} BuildCookRun \
+               -project={PROJECT_FILE_FULL_PATH} \
+               -noP4 -platform={BUILD_PLATFORM} \
+               -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
+               -cook -allmaps -build -stage \
+               -pak -archive -archivedirectory={BUILD_ARCHIVE_PATH}'
+        sExt = "bat"
+        sCmd = sCmd.format(
+                           UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+                           EXT=sExt, 
+                           PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+                           BUILD_PLATFORM=self.m_sBuildPlatform,
+                           BUILD_CONFIG=self.m_sBuildConfig,
+                           BUILD_ARCHIVE_PATH=self.m_sBuildArchivePath
+                            ) 
+
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
            
