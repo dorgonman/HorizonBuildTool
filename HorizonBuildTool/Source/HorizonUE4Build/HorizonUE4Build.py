@@ -96,18 +96,8 @@ class HorizonUE4Build(object):
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
         reportFile.truncate()
         reportFile.close()
-       
-        if(self.m_sClean == True):
-            print("start clean project")
-            try:
-              sCmd = 'git clean -d -f -x'
-              result = subprocess.run(sCmd, shell=True)
-              if(result.returncode == 0):
-                   bSuccess = True
-            except:
-                pass 
-        else:
-            self.buildClient()
+        #self.cookClient()
+        self.buildClient()
 
 
     def buildClient(self):
@@ -119,7 +109,13 @@ class HorizonUE4Build(object):
                -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
                -cook -allmaps -build -stage \
                -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
-        sExt = "bat"
+        
+
+        if("win" in self.m_sBuildPlatform.lower()):
+            sExt = "bat"
+        else:
+            sExt = "sh"
+
         sCmd = sCmd.format(
                            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
                            EXT=sExt, 
@@ -137,3 +133,36 @@ class HorizonUE4Build(object):
         reportFile.close()
         return bSuccess  
            
+
+    def cookClient(self):
+        bSuccess = False
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun \
+               -project="{PROJECT_FILE_FULL_PATH}" \
+               -noP4 -platform={BUILD_PLATFORM} \
+               -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
+               -cook -allmaps -NoCompile -stage \
+               -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
+        
+
+        if("win" in self.m_sBuildPlatform.lower()):
+            sExt = "bat"
+        else:
+            sExt = "sh"
+
+        sCmd = sCmd.format(
+                           UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+                           EXT=sExt, 
+                           PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+                           BUILD_PLATFORM=self.m_sBuildPlatform,
+                           BUILD_CONFIG=self.m_sBuildConfig,
+                           BUILD_ARCHIVE_PATH=self.m_sBuildArchivePath
+                            ) 
+
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
