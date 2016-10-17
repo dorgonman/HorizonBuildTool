@@ -96,8 +96,32 @@ class HorizonUE4Build(object):
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
         reportFile.truncate()
         reportFile.close()
-        #self.cookClient()
+        self.buildClientEditor()
         self.buildClient()
+   
+    def buildClientEditor(self):
+        # for fix error: https://answers.unrealengine.com/questions/409205/automated-build-system-errors-ue4editor-xdll-missi.html
+        bSuccess = False
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe" \
+                {BUILD_TARGET} {BUILD_CONFIG} {BUILD_PLATFORM} -project="{PROJECT_FILE_FULL_PATH}" \
+                -editorrecompile -progress -noubtmakefiles -NoHotReloadFromIDE -2015'
+
+
+        sBuildTarget = os.path.splitext(os.path.basename(self.m_sProjectFileFullPath))[0]
+        sCmd = sCmd.format(
+            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+            BUILD_TARGET=sBuildTarget, 
+            PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+            BUILD_PLATFORM=self.m_sBuildPlatform,
+            BUILD_CONFIG=self.m_sBuildConfig) 
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
 
 
     def buildClient(self):
@@ -111,19 +135,7 @@ class HorizonUE4Build(object):
                -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
         
 
-        if("win" in self.m_sBuildPlatform.lower()):
-            sExt = "bat"
-        else:
-            sExt = "sh"
-
-        sCmd = sCmd.format(
-                           UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
-                           EXT=sExt, 
-                           PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
-                           BUILD_PLATFORM=self.m_sBuildPlatform,
-                           BUILD_CONFIG=self.m_sBuildConfig,
-                           BUILD_ARCHIVE_PATH=self.m_sBuildArchivePath
-                            ) 
+        sCmd = self.__getBuildCommand(sCmd)
 
         HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
         result = subprocess.run(sCmd, shell=True)  
@@ -145,19 +157,7 @@ class HorizonUE4Build(object):
                -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
         
 
-        if("win" in self.m_sBuildPlatform.lower()):
-            sExt = "bat"
-        else:
-            sExt = "sh"
-
-        sCmd = sCmd.format(
-                           UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
-                           EXT=sExt, 
-                           PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
-                           BUILD_PLATFORM=self.m_sBuildPlatform,
-                           BUILD_CONFIG=self.m_sBuildConfig,
-                           BUILD_ARCHIVE_PATH=self.m_sBuildArchivePath
-                            ) 
+        sCmd = self.__getBuildCommand(sCmd)
 
         HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
         result = subprocess.run(sCmd, shell=True)  
@@ -166,3 +166,27 @@ class HorizonUE4Build(object):
             bSuccess = True
         reportFile.close()
         return bSuccess  
+
+
+
+
+
+    #========================private function==============================
+    def __getExt(self):
+        sExt = "sh"
+        if("win" in self.m_sBuildPlatform.lower()):
+            sExt = "bat"
+        else:
+            sExt = "sh"
+        return sExt
+    def __getBuildCommand(self, sCmd):
+        sExt = self.__getExt()
+        sResult = sCmd.format(
+                           UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+                           EXT=sExt, 
+                           PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+                           BUILD_PLATFORM=self.m_sBuildPlatform,
+                           BUILD_CONFIG=self.m_sBuildConfig,
+                           BUILD_ARCHIVE_PATH=self.m_sBuildArchivePath
+                            ) 
+        return sResult
