@@ -52,35 +52,42 @@ class HorizonUE4Build(object):
         parser.add_option("--archive", dest="build_archive_path",
                       default="./Archive/Build/",
                       help="build_archive_path", metavar="build_archive_path")
+
+
+        parser.add_option("--buildclient", action="store_true", dest="buildclient")
+        parser.add_option("--buildserver", action="store_true", dest="buildserver")
+
+        parser.add_option("--cookclient", action="store_true", dest="cookclient")
+        parser.add_option("--cookserver", action="store_true", dest="cookserver")
         return parser;
     def init(self):
         print("curretn folder:" + os.getcwd() + "\n")
         parser = self.__generateOptionParser__()
-        (options, args) = parser.parse_args()
-        print("options:" + str(options))
-        print("args" + str(args))
-        if(options.config != None):
-           self.m_sConfig = options.config;
+        (self.options, self.args) = parser.parse_args()
+        print("options:" + str(self.options))
+        print("args" + str(self.args))
+        if(self.options.config != None):
+           self.m_sConfig = self.options.config;
 
-        if(options.clean != None):
-           self.m_sClean = options.clean;
+        if(self.options.clean != None):
+           self.m_sClean = self.options.clean;
 
-        if(options.unreal_engine_root != None):
-           self.m_sUnrealEngineRoot = options.unreal_engine_root;
+        if(self.options.unreal_engine_root != None):
+           self.m_sUnrealEngineRoot = self.options.unreal_engine_root;
 
-        if(options.project_file_full_path != None):
-           self.m_sProjectFileFullPath = options.project_file_full_path;
-
-
-        if(options.build_platform != None):
-           self.m_sBuildPlatform = options.build_platform;
+        if(self.options.project_file_full_path != None):
+           self.m_sProjectFileFullPath = self.options.project_file_full_path;
 
 
-        if(options.build_config != None):
-           self.m_sBuildConfig = options.build_config;
+        if(self.options.build_platform != None):
+           self.m_sBuildPlatform = self.options.build_platform;
 
-        if(options.build_archive_path != None):
-           self.m_sBuildArchivePath = options.build_archive_path;
+
+        if(self.options.build_config != None):
+           self.m_sBuildConfig = self.options.build_config;
+
+        if(self.options.build_archive_path != None):
+           self.m_sBuildArchivePath = self.options.build_archive_path;
 
 
         print("m_sUnrealEngineRoot:" + str(self.m_sUnrealEngineRoot))
@@ -96,36 +103,26 @@ class HorizonUE4Build(object):
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
         reportFile.truncate()
         reportFile.close()
-        self.buildClientEditor()
-        self.buildClient()
+     
+        if(self.options.buildclient != None):
+             self.buildClient()
    
-    def buildClientEditor(self):
-        # for fix error: https://answers.unrealengine.com/questions/409205/automated-build-system-errors-ue4editor-xdll-missi.html
-        bSuccess = False
-        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
-        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe" \
-                {BUILD_TARGET} {BUILD_CONFIG} {BUILD_PLATFORM} -project="{PROJECT_FILE_FULL_PATH}" \
-                -editorrecompile -progress -noubtmakefiles -NoHotReloadFromIDE -2015'
+   
+        if(self.options.buildserver != None):
+             self.buildServer()
 
 
-        sBuildTarget = os.path.splitext(os.path.basename(self.m_sProjectFileFullPath))[0]
-        sCmd = sCmd.format(
-            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
-            BUILD_TARGET=sBuildTarget, 
-            PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
-            BUILD_PLATFORM=self.m_sBuildPlatform,
-            BUILD_CONFIG=self.m_sBuildConfig) 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
-        result = subprocess.run(sCmd, shell=True)  
+        if(self.options.cookclient != None):
+            self.cookClient()
 
-        if(result.returncode == 0):
-            bSuccess = True
-        reportFile.close()
-        return bSuccess  
+        if(self.options.cookserver != None):
+             self.cookServer()
+  
 
 
     def buildClient(self):
         bSuccess = False
+        self.__buildClientEditor()
         reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
         sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun \
                -project="{PROJECT_FILE_FULL_PATH}" \
@@ -168,10 +165,98 @@ class HorizonUE4Build(object):
         return bSuccess  
 
 
+    def buildServer(self):
+        bSuccess = False
+        #self.__buildServerEditor()
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun -verbose\
+               -project="{PROJECT_FILE_FULL_PATH}" \
+               -noP4 -platform={BUILD_PLATFORM} \
+               -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
+               -cook -server -serverplatform={BUILD_PLATFORM} -noclient -build -stage \
+               -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
+        
 
+        sCmd = self.__getBuildCommand(sCmd)
 
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
 
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
+
+    def cookServer(self):
+        bSuccess = False
+        self.__buildClientEditor()
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun \
+               -project="{PROJECT_FILE_FULL_PATH}" \
+               -noP4 -platform={BUILD_PLATFORM} \
+               -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
+               -cook -server -serverplatform={BUILD_PLATFORM} -noclient -NoCompile -stage \
+               -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
+        
+
+        sCmd = self.__getBuildCommand(sCmd)
+
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
     #========================private function==============================
+
+    def __buildClientEditor(self):
+        # for fix error: https://answers.unrealengine.com/questions/409205/automated-build-system-errors-ue4editor-xdll-missi.html
+        bSuccess = False
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe" \
+                {BUILD_TARGET} {BUILD_CONFIG} {BUILD_PLATFORM} -project="{PROJECT_FILE_FULL_PATH}" \
+                -editorrecompile -progress -noubtmakefiles -NoHotReloadFromIDE -2015'
+
+
+        sBuildTarget = os.path.splitext(os.path.basename(self.m_sProjectFileFullPath))[0]
+        sCmd = sCmd.format(
+            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+            BUILD_TARGET=sBuildTarget, 
+            PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+            BUILD_PLATFORM=self.m_sBuildPlatform,
+            BUILD_CONFIG=self.m_sBuildConfig) 
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
+    def __buildServerEditor(self):
+        # for fix error: https://answers.unrealengine.com/questions/409205/automated-build-system-errors-ue4editor-xdll-missi.html
+        bSuccess = False
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe" \
+                {BUILD_TARGET} {BUILD_CONFIG} {BUILD_PLATFORM} -project="{PROJECT_FILE_FULL_PATH}" \
+                -editorrecompile -progress -noubtmakefiles -NoHotReloadFromIDE -2015'
+
+
+        sBuildTarget = os.path.splitext(os.path.basename(self.m_sProjectFileFullPath))[0] + "Server"
+        sCmd = sCmd.format(
+            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+            BUILD_TARGET=sBuildTarget, 
+            PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+            BUILD_PLATFORM=self.m_sBuildPlatform,
+            BUILD_CONFIG=self.m_sBuildConfig) 
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
+  
     def __getExt(self):
         sExt = "sh"
         if("win" in self.m_sBuildPlatform.lower()):

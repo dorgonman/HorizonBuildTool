@@ -23,7 +23,7 @@ class HorizonCMakeBuild(object):
         self.m_iCodeVersion = 1
         self.m_sConfig = "default";
         self.m_sOutReportFilePath = "Output/HorizonCMakeBuildReport.log"
-        self.m_sClean = False
+        self.m_bClean = False
 
     def __generateOptionParser__(self):
         parser = OptionParser();
@@ -42,7 +42,7 @@ class HorizonCMakeBuild(object):
            self.m_sConfig = options.config;
 
         if(options.clean != None):
-           self.m_sClean = options.clean;
+           self.m_bClean = options.clean;
 
         xmldoc = minidom.parse(self.m_sConfig)
         self.m_sHorizonEngineRoot = os.path.abspath(xmldoc.getElementsByTagName('HorizonEngineRoot')[0].firstChild.nodeValue);
@@ -287,7 +287,7 @@ class HorizonCMakeBuild(object):
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
         reportFile.truncate()
         reportFile.close()
-        if(self.m_sClean == True):
+        if(self.m_bClean == True):
             print("start clean project")
             try:
                 print("remove folder:" + self.m_sProjectIDERoot)
