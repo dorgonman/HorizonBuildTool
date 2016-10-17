@@ -75,6 +75,10 @@ class HorizonUE4Build(object):
         if(options.build_platform != None):
            self.m_sBuildPlatform = options.build_platform;
 
+
+        if(options.build_config != None):
+           self.m_sBuildConfig = options.build_config;
+
         if(options.build_archive_path != None):
            self.m_sBuildArchivePath = options.build_archive_path;
 
@@ -87,14 +91,19 @@ class HorizonUE4Build(object):
         #self.m_sHorizonEngineRoot = os.path.abspath(xmldoc.getElementsByTagName('UnrealEngineRoot')[0].firstChild.nodeValue);
 
     def execute(self): 
+
         HorizonBuildFileUtil.HorizonBuildFileUtil.EnsureDir(self.m_sOutReportFilePath)
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
         reportFile.truncate()
         reportFile.close()
+       
         if(self.m_sClean == True):
             print("start clean project")
             try:
-             pass
+              sCmd = 'git clean -d -f -x'
+              result = subprocess.run(sCmd, shell=True)
+              if(result.returncode == 0):
+                   bSuccess = True
             except:
                 pass 
         else:
@@ -104,12 +113,12 @@ class HorizonUE4Build(object):
     def buildClient(self):
         bSuccess = False
         reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
-        sCmd = '{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT} BuildCookRun \
-               -project={PROJECT_FILE_FULL_PATH} \
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun \
+               -project="{PROJECT_FILE_FULL_PATH}" \
                -noP4 -platform={BUILD_PLATFORM} \
                -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
                -cook -allmaps -build -stage \
-               -pak -archive -archivedirectory={BUILD_ARCHIVE_PATH}'
+               -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
         sExt = "bat"
         sCmd = sCmd.format(
                            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
