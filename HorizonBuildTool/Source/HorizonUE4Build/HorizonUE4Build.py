@@ -59,6 +59,8 @@ class HorizonUE4Build(object):
 
         parser.add_option("--cookclient", action="store_true", dest="cookclient")
         parser.add_option("--cookserver", action="store_true", dest="cookserver")
+
+        parser.add_option("--crosscompile", action="store_true", dest="crosscompile")
         return parser;
     def init(self):
         print("curretn folder:" + os.getcwd() + "\n")
@@ -134,7 +136,7 @@ class HorizonUE4Build(object):
 
         sCmd = self.__getBuildCommand(sCmd)
 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" + sCmd)
         result = subprocess.run(sCmd, shell=True)  
 
         if(result.returncode == 0):
@@ -156,7 +158,7 @@ class HorizonUE4Build(object):
 
         sCmd = self.__getBuildCommand(sCmd)
 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" + sCmd)
         result = subprocess.run(sCmd, shell=True)  
 
         if(result.returncode == 0):
@@ -179,7 +181,7 @@ class HorizonUE4Build(object):
 
         sCmd = self.__getBuildCommand(sCmd)
 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" + sCmd)
         result = subprocess.run(sCmd, shell=True)  
 
         if(result.returncode == 0):
@@ -201,7 +203,7 @@ class HorizonUE4Build(object):
 
         sCmd = self.__getBuildCommand(sCmd)
 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" +  sCmd)
         result = subprocess.run(sCmd, shell=True)  
 
         if(result.returncode == 0):
@@ -226,7 +228,7 @@ class HorizonUE4Build(object):
             PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
             BUILD_PLATFORM=self.m_sBuildPlatform,
             BUILD_CONFIG=self.m_sBuildConfig) 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" + sCmd)
         result = subprocess.run(sCmd, shell=True)  
 
         if(result.returncode == 0):
@@ -249,7 +251,7 @@ class HorizonUE4Build(object):
             PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
             BUILD_PLATFORM=self.m_sBuildPlatform,
             BUILD_CONFIG=self.m_sBuildConfig) 
-        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, sCmd)
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" + sCmd)
         result = subprocess.run(sCmd, shell=True)  
 
         if(result.returncode == 0):
@@ -259,7 +261,10 @@ class HorizonUE4Build(object):
   
     def __getExt(self):
         sExt = "sh"
-        if("win" in self.m_sBuildPlatform.lower()):
+        if("win" in self.m_sBuildPlatform.lower() 
+          or 
+          ("linux" in self.m_sBuildPlatform.lower() and (self.options.crosscompile != None))
+          ):
             sExt = "bat"
         else:
             sExt = "sh"
