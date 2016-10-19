@@ -172,12 +172,12 @@ class HorizonUE4Build(object):
         bSuccess = False
         #self.__buildServerEditor()
         reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
-        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun -verbose\
-               -project="{PROJECT_FILE_FULL_PATH}" \
-               -noP4 -platform={BUILD_PLATFORM} \
-               -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
-               -cook -server -serverplatform={BUILD_PLATFORM} -noclient -build -stage \
-               -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun \
+                -nocompileeditor -nop4  \
+               -project="{PROJECT_FILE_FULL_PATH}" -cook -stage -archive -archivedirectory="{BUILD_ARCHIVE_PATH}" \
+               -package -server -serverconfig={BUILD_CONFIG} -noclient \
+               -SKIPEDITORCONTENT -pak -prereqs -nodebuginfo -platform={BUILD_PLATFORM} \
+               -build -CrashReporter -utf8output -compile'
         
 
         sCmd = self.__getBuildCommand(sCmd)
