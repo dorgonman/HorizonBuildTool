@@ -106,6 +106,7 @@ class HorizonUE4Build(object):
         reportFile.truncate()
         reportFile.close()
      
+        #self.__buildEngine()
         if(self.options.buildclient != None):
              self.buildClient()
    
@@ -211,13 +212,34 @@ class HorizonUE4Build(object):
         reportFile.close()
         return bSuccess  
     #========================private function==============================
+    def __buildEngine(self):
+        # for fix error: https://answers.unrealengine.com/questions/409205/automated-build-system-errors-ue4editor-xdll-missi.html
+        bSuccess = False
+        reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
+        sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe" \
+                UE4Game {BUILD_PLATFORM} {BUILD_CONFIG} -waitmutex -DEPLOY'
 
+
+        sBuildTarget = os.path.splitext(os.path.basename(self.m_sProjectFileFullPath))[0]
+        sCmd = sCmd.format(
+            UNREAL_ENGINE_ROOT=self.m_sUnrealEngineRoot, 
+            BUILD_TARGET=sBuildTarget, 
+            PROJECT_FILE_FULL_PATH=self.m_sProjectFileFullPath,
+            BUILD_PLATFORM=self.m_sBuildPlatform,
+            BUILD_CONFIG=self.m_sBuildConfig) 
+        HorizonBuildFileUtil.HorizonBuildFileUtil.LogInfo(reportFile, "==================" + sCmd)
+        result = subprocess.run(sCmd, shell=True)  
+
+        if(result.returncode == 0):
+            bSuccess = True
+        reportFile.close()
+        return bSuccess  
     def __buildClientEditor(self):
         # for fix error: https://answers.unrealengine.com/questions/409205/automated-build-system-errors-ue4editor-xdll-missi.html
         bSuccess = False
         reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
         sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe" \
-                {BUILD_TARGET} {BUILD_CONFIG} {BUILD_PLATFORM} -project="{PROJECT_FILE_FULL_PATH}" \
+                {BUILD_TARGET} {BUILD_PLATFORM} {BUILD_CONFIG} -project="{PROJECT_FILE_FULL_PATH}" \
                 -editorrecompile -progress -noubtmakefiles -NoHotReloadFromIDE -2015'
 
 
@@ -261,10 +283,8 @@ class HorizonUE4Build(object):
   
     def __getExt(self):
         sExt = "sh"
-        if("win" in self.m_sBuildPlatform.lower() 
-          or 
-          ("linux" in self.m_sBuildPlatform.lower() and (self.options.crosscompile != None))
-          ):
+        bIsWindows = sys.platform.startswith('win')
+        if(bIsWindows):
             sExt = "bat"
         else:
             sExt = "sh"
