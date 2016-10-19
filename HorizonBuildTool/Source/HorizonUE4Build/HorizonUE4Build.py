@@ -105,7 +105,11 @@ class HorizonUE4Build(object):
         reportFile = open(self.m_sOutReportFilePath, 'w', encoding = 'utf-8')
         reportFile.truncate()
         reportFile.close()
-     
+        if(self.options.cookclient != None):
+            self.cookClient()
+
+        if(self.options.cookserver != None):
+             self.cookServer()
         #self.__buildEngine()
         if(self.options.buildclient != None):
              self.buildClient()
@@ -115,11 +119,7 @@ class HorizonUE4Build(object):
              self.buildServer()
 
 
-        if(self.options.cookclient != None):
-            self.cookClient()
-
-        if(self.options.cookserver != None):
-             self.cookServer()
+   
   
 
 
@@ -128,11 +128,11 @@ class HorizonUE4Build(object):
         self.__buildClientEditor()
         reportFile = open(self.m_sOutReportFilePath, 'a', encoding = 'utf-8')
         sCmd = '"{UNREAL_ENGINE_ROOT}/Engine/Build/BatchFiles/RunUAT.{EXT}" BuildCookRun \
-               -project="{PROJECT_FILE_FULL_PATH}" \
-               -noP4 -platform={BUILD_PLATFORM} \
-               -clientconfig={BUILD_CONFIG} -serverconfig={BUILD_CONFIG} \
-               -cook -allmaps -build -stage \
-               -pak -archive -archivedirectory="{BUILD_ARCHIVE_PATH}"'
+                -nocompileeditor -nop4  \
+               -project="{PROJECT_FILE_FULL_PATH}" -cook -stage -archive -archivedirectory="{BUILD_ARCHIVE_PATH}" \
+               -package -clientconfig={BUILD_CONFIG}  \
+               -SKIPEDITORCONTENT -pak -prereqs -nodebuginfo -platform={BUILD_PLATFORM} \
+               -build -CrashReporter -utf8output -compile'
         
 
         sCmd = self.__getBuildCommand(sCmd)
